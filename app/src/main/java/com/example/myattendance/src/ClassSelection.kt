@@ -1,12 +1,12 @@
-package com.example.myattendance
+package com.example.myattendance.src
 
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myattendance.R
 
-const val EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE"
 
 class ClassSelection : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +28,7 @@ class ClassSelection : AppCompatActivity() {
         with(view as Button) {
             val intent = Intent(
                     baseContext, QrGenerator::class.java)
-            intent.putExtra(EXTRA_MESSAGE, this.text)
+            intent.putExtra("class", this.text.toString())
             startActivity(intent)
         }
     }

@@ -1,4 +1,4 @@
-package com.example.myattendance
+package com.example.myattendance.src
 
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -6,12 +6,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.budiyev.android.codescanner.AutoFocusMode
-import com.budiyev.android.codescanner.CodeScanner
-import com.budiyev.android.codescanner.CodeScannerView
-import com.budiyev.android.codescanner.DecodeCallback
-import com.budiyev.android.codescanner.ErrorCallback
-import com.budiyev.android.codescanner.ScanMode
+import com.budiyev.android.codescanner.*
+import com.example.myattendance.R
+import com.example.myattendance.utility.Connection
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import java.io.File
+import java.util.*
 
 
 private const val CAMERA_REQUEST_CODE = 101
@@ -47,7 +47,18 @@ class ScanQr : AppCompatActivity() {
             // Do what if scan successfully
             decodeCallback = DecodeCallback {
                 runOnUiThread {
-                    Toast.makeText(baseContext, "Scan result: ${it.text}", Toast.LENGTH_LONG).show()
+                    //Toast.makeText(baseContext, "Scan result: ${it.text}", Toast.LENGTH_LONG).show()
+                    val deviceConnection = Connection()
+
+                    var attendanceInfo = ""
+                    if(!deviceConnection.isInternetAvailable(applicationContext)) {
+                        val qrMessage = Scanner(it.text).useDelimiter(File.pathSeparator)
+                        val newLine = System.getProperty("line.separator")
+                        while(qrMessage.hasNext()){
+                            attendanceInfo += qrMessage.next()
+                        }
+                        qrMessage.close()
+                    }
                 }
             }
             errorCallback = ErrorCallback { // or ErrorCallback.SUPPRESS
@@ -83,8 +94,8 @@ class ScanQr : AppCompatActivity() {
 
     private fun makeRequest() {
         ActivityCompat.requestPermissions(this,
-        arrayOf(android.Manifest.permission.CAMERA),
-        CAMERA_REQUEST_CODE)
+                arrayOf(android.Manifest.permission.CAMERA),
+                CAMERA_REQUEST_CODE)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -92,7 +103,7 @@ class ScanQr : AppCompatActivity() {
             // When requestCode == CAMERA_REQUEST_CODE
             CAMERA_REQUEST_CODE -> {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this,"You need the camera permission to be able to use this app!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "You need the camera permission to be able to use this app!", Toast.LENGTH_SHORT).show()
                     // Can add a button here in case user wants to grant the permission in the app immediately, rather than needing to restart the app
                 } else {
                     //successfully get permission

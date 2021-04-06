@@ -1,4 +1,4 @@
-package com.example.myattendance
+package com.example.myattendance.src
 
 import android.content.Context
 import android.util.AttributeSet

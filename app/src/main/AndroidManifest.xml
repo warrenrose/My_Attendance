@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.myattendance">
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA"/>
 
     <application
@@ -11,19 +12,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyAttendance">
-        <activity android:name=".Login">
+        <activity android:name=".src.Login">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity"
+        <activity android:name=".src.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
-        <activity android:name=".ClassSelection"/>
-        <activity android:name=".QrGenerator"/>
-        <activity android:name=".ScanQr"/>
+        <activity android:name=".src.ClassSelection"/>
+        <activity android:name=".src.QrGenerator"/>
+        <activity android:name=".src.ScanQr"/>
     </application>
 
 </manifest>

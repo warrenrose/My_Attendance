@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">My Attendance</string>
+    <string name="app_name_mm">My \nAttendance</string>
+    <string name="scan_button_title">Scan QR Code</string>
+    <string name="genqr_button_title">Generate QR Code</string>
+    <string name="scan_qr_instruction">Scan your teacher\'s \nor student\'s QR Code</string>
+    <string name="gen_qr_instruction">Let your teacher or students \nscan your QR Code</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="select_class_instruction">Please select one of your classes below</string>
+    <string name="Class_PCNP">UCCD1004 Programming Concepts and Practices</string>
+    <string name="Class_BA">UCCM1353 Basic Algebra</string>
+    <string name="Class_AA">UCCC2063 Algorithms Analysis</string>
+    <string name="Class_OS">UCCD2103 Operating Systems</string>
+    <string name="Class_DS">UCCC3073 Data Science</string>
+    <string name="scan_instruction">Please Scan the QR Code Below</string>
+</resources>

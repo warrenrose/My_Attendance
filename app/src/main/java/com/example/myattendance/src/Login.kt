@@ -4,9 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricPrompt
 import com.example.myattendance.R
+import com.example.myattendance.utility.Biometric
+import com.example.myattendance.utility.Registration
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -18,6 +20,10 @@ import com.google.android.gms.tasks.Task
 
 
 class Login : AppCompatActivity() {
+
+    private lateinit var biometricPrompt: BiometricPrompt
+    private lateinit var promptInfo: BiometricPrompt.PromptInfo
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.login)
@@ -28,6 +34,7 @@ class Login : AppCompatActivity() {
                 .requestEmail()
                 .build()
 
+
         // Build a GoogleSignInClient with the options specified by gso.
         var mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
 
@@ -35,13 +42,21 @@ class Login : AppCompatActivity() {
             signIn(mGoogleSignInClient)
         }
 
-        findViewById<Button>(R.id.sign_out_button).setOnClickListener {
+        /*findViewById<Button>(R.id.sign_out_button).setOnClickListener {
             signOut(mGoogleSignInClient)
-        }
+        }*/
     }
 
     private fun updateUI(account: GoogleSignInAccount?) {
+        val userApp = Registration()
+        val userBio = Biometric()
+        biometricPrompt = userBio.createBiometricPrompt(this, applicationContext, "login")
+        promptInfo = userBio.createPromptInfo(getString(R.string.prompt_info_title), getString(R.string.prompt_info_subtitle), getString(R.string.prompt_info_description), getString(R.string.prompt_info_use_app_password))
+        biometricPrompt.authenticate(promptInfo)
         if(account != null) {
+            if(!userApp.hasRegistered(applicationContext)) {
+                userApp.register(applicationContext)
+            }
             findViewById<SignInButton>(R.id.sign_in_button).visibility = View.GONE
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
@@ -57,6 +72,7 @@ class Login : AppCompatActivity() {
         // the GoogleSignInAccount will be non-null.
         val account = GoogleSignIn.getLastSignedInAccount(this)
         updateUI(account)
+
     }
 
     private fun signIn(Client: GoogleSignInClient) {
@@ -88,16 +104,17 @@ class Login : AppCompatActivity() {
         }
     }
 
-    private fun signOut(Client: GoogleSignInClient) {
-        Client.signOut()
-                .addOnCompleteListener(this, OnCompleteListener<Void?> {
-                    val intent = Intent(baseContext, Login::class.java)
-                    startActivity(intent)
-                })
-    }
-
     fun loginSuccess(view: View) {
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
     }
+
+    /*private fun signOut(Client: GoogleSignInClient) {
+        Client.signOut()
+                .addOnCompleteListener(this, OnCompleteListener<Void?> {
+                    val intent = Intent(applicationContext, Login::class.java)
+                    startActivity(intent)
+                })
+    }*/
+
 }

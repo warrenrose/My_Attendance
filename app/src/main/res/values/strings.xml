@@ -17,4 +17,10 @@
     <string name="Class_OS">UCCD2103 Operating Systems</string>
     <string name="Class_DS">UCCC3073 Data Science</string>
     <string name="scan_instruction">Please Scan the QR Code Below</string>
+    <string name="prompt_info_title">My Attendance</string>
+    <string name="prompt_info_subtitle">Please verify your identity</string>
+    <string name="prompt_info_description">Scan fingerprint to proceed</string>
+    <string name="prompt_info_use_app_password">Use Account Password</string>
+    <string name="invalidQR">You are scanning a QR Code that is not generated from this Application</string>
+
 </resources>

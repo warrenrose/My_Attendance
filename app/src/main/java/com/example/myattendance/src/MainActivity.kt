@@ -7,6 +7,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
+import android.widget.Button
+import android.widget.TextView
 import androidx.annotation.NonNull
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -17,6 +19,10 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.example.myattendance.R
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
@@ -35,6 +41,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             return false
         }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,10 +72,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             drawer.openDrawer(GravityCompat.START)
         }
 
+        val inflater = layoutInflater
+        val myView: View = inflater.inflate(R.layout.main_menu_drawer_header, null)
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .build()
+
+        // Build a GoogleSignInClient with the options specified by gso.
+        var mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+
+        myView.findViewById<Button>(R.id.sign_out_button).setOnClickListener {
+            signOut(mGoogleSignInClient)
+        }
 
     }
-
-
 
     override fun onBackPressed() {
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
@@ -129,6 +146,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    private fun signOut(Client: GoogleSignInClient) {
+        Client.signOut()
+                .addOnCompleteListener(this, OnCompleteListener<Void?> {
+                    val intent = Intent(this, Login::class.java)
+                    startActivity(intent)
+                })
+    }
 
     companion object {
         private const val MODE_DARK = 0
@@ -144,4 +168,5 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val intent = Intent(this, ScanQr::class.java)
         startActivity(intent)
     }
+
 }

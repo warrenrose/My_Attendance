@@ -18,6 +18,7 @@ class ClassSelection : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.class_selection)
+        title = "Class Selection"
 
         val class1 = findViewById<Button>(R.id.class_1)
         val class2 = findViewById<Button>(R.id.class_2)

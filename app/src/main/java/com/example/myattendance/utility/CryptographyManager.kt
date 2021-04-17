@@ -1,7 +1,12 @@
 package com.example.myattendance.utility
 
+import android.content.Context
+import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import androidx.security.crypto.EncryptedFile
+import androidx.security.crypto.MasterKey
+import java.io.File
 import java.nio.charset.Charset
 import java.security.KeyStore
 import javax.crypto.Cipher
@@ -33,6 +38,11 @@ interface CryptographyManager {
      */
     fun decryptData(ciphertext: ByteArray, cipher: Cipher): String
 
+    /**
+     * Create an encryptedFile to store Registration Info, Attendance Data
+     */
+    fun getOrCreateEncryptedFile(context: Context,  dir: File, fileName: String): EncryptedFile
+
 }
 
 fun CryptographyManager(): CryptographyManager = CryptographyManagerImpl()
@@ -43,7 +53,7 @@ private class CryptographyManagerImpl : CryptographyManager {
 
     private val KEY_SIZE: Int = 256
     val ANDROID_KEYSTORE = "AndroidKeyStore"
-    private val ENCRYPTION_BLOCK_MODE = KeyProperties.BLOCK_MODE_GCM
+    private val ENCRYPTION_BLOCK_MODE = KeyProperties.BLOCK_MODE_GCM        // Better than CBC
     private val ENCRYPTION_PADDING = KeyProperties.ENCRYPTION_PADDING_NONE
     private val ENCRYPTION_ALGORITHM = KeyProperties.KEY_ALGORITHM_AES
 
@@ -97,6 +107,36 @@ private class CryptographyManagerImpl : CryptographyManager {
             ANDROID_KEYSTORE)
         keyGenerator.init(keyGenParams)
         return keyGenerator.generateKey()
+    }
+
+    override fun getOrCreateEncryptedFile(context: Context, dir: File, fileName: String): EncryptedFile {
+
+        /*val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE)
+        keyStore.load(null) // Keystore must be loaded before it can be accessed
+        keyStore.getKey(keyName, null)?.let { return it as SecretKey }*/
+
+        /*val advancedSpec = KeyGenParameterSpec.Builder(
+            keyName,
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+        ).apply {
+            setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            setKeySize(256)
+        }.build()*/
+
+        val mainKey = MasterKey.Builder(context)
+            //.setKeyGenParameterSpec(advancedSpec)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .setRequestStrongBoxBacked(true)
+            .build()
+
+
+        return EncryptedFile.Builder(
+            context,
+            File(dir, fileName),
+            mainKey,
+            EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+        ).build()
     }
 
 }

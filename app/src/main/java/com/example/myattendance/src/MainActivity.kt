@@ -8,17 +8,22 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageView
+import android.widget.RemoteViews
 import android.widget.TextView
 import androidx.annotation.NonNull
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
+import androidx.biometric.BiometricPrompt
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.example.myattendance.R
+import com.example.myattendance.utility.Biometric
+import com.example.myattendance.utility.Registration
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -26,17 +31,31 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
+import com.squareup.picasso.Picasso
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var bottomNavigationView: BottomNavigationView? = null
+    private lateinit var biometricPrompt: BiometricPrompt
+    private lateinit var promptInfo: BiometricPrompt.PromptInfo
 
     private val mOnNavigationItemSelectedListener: BottomNavigationView.OnNavigationItemSelectedListener = object : BottomNavigationView.OnNavigationItemSelectedListener {
         override fun onNavigationItemSelected(@NonNull item: MenuItem): Boolean {
             var fragment: Fragment
             when (item.itemId) {
-                R.id.navigationMyProfile -> return true
+                R.id.navigationMyProfile ->
+                    return true
+                R.id.navigationPending -> {
+                    val intent = Intent(baseContext, Pending::class.java)
+                    startActivity(intent)
+                    return true
+                }
+                R.id.history -> {
+                    val intent = Intent(baseContext, History::class.java)
+                    startActivity(intent)
+                    return true
+                }
                 R.id.navigationHome -> return true
             }
             return false
@@ -49,15 +68,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setDarkMode(window)
         setContentView(R.layout.main_menu_side_drawer)
 
+        val userApp = Registration()
+        val userBio = Biometric()
+        biometricPrompt = userBio.createBiometricPrompt(this, applicationContext, "register")
+        promptInfo = userBio.createPromptInfo(getString(R.string.prompt_info_title), "This is for user registration", "Please verify your identity to register", getString(R.string.prompt_info_use_app_password))
+        //biometricPrompt.authenticate(promptInfo)
+
+        if(GoogleSignIn.getLastSignedInAccount(applicationContext) != null) {
+            if (!userApp.hasRegistered(applicationContext)) {
+                biometricPrompt.authenticate(promptInfo)
+                //userApp.register(applicationContext)
+            }
+        }
+
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
         val toggle = ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+            this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
+        )
         drawer.addDrawerListener(toggle)
         toggle.syncState()
 
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
+
         navigationView.setNavigationItemSelectedListener(this)
         bottomNavigationView = findViewById(R.id.navigation)
         bottomNavigationView?.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
@@ -72,16 +106,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             drawer.openDrawer(GravityCompat.START)
         }
 
-        val inflater = layoutInflater
-        val myView: View = inflater.inflate(R.layout.main_menu_drawer_header, null)
+
+        val navHeader = navigationView.getHeaderView(0)
+
+        val userAcc = GoogleSignIn.getLastSignedInAccount(applicationContext)
+        if (userAcc != null) {
+            Picasso.get().load(userAcc.photoUrl).into(navHeader.findViewById<ImageView>(R.id.acc_profilePic))
+            navHeader.findViewById<TextView>(R.id.acc_email).text = userAcc.email
+            navHeader.findViewById<TextView>(R.id.acc_username).text = userAcc.displayName
+        }
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
                 .build()
 
         // Build a GoogleSignInClient with the options specified by gso.
         var mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        myView.findViewById<Button>(R.id.sign_out_button).setOnClickListener {
+        navHeader.findViewById<Button>(R.id.sign_out_button).setOnClickListener {
             signOut(mGoogleSignInClient)
         }
 

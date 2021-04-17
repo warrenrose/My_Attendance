@@ -3,7 +3,6 @@ package com.example.myattendance.utility
 import android.content.Context
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
@@ -12,8 +11,7 @@ import java.nio.charset.Charset
 
 class Biometric {
 
-    private lateinit var textInputView: AppCompatEditText
-    private lateinit var textOutputView: AppCompatTextView
+    private lateinit var dataToProcess: String
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var promptInfo: BiometricPrompt.PromptInfo
     private var readyToEncrypt: Boolean = false
@@ -29,6 +27,7 @@ class Biometric {
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                 super.onAuthenticationError(errorCode, errString)
                 Log.d(TAG, "$errorCode :: $errString")
+
             }
 
             override fun onAuthenticationFailed() {
@@ -40,7 +39,10 @@ class Biometric {
                 super.onAuthenticationSucceeded(result)
                 Log.d(TAG, "Authentication was successful")
                 if(action == "Encrypt") {
-                    processData(result.cryptoObject)
+                    processData(dataToProcess, result.cryptoObject)
+                }
+                else if(action == "register") {
+                    Registration().register(context)
                 }
             }
         }
@@ -67,41 +69,39 @@ class Biometric {
                 .build()
     }
 
-    private fun authenticateToEncrypt(appContext: Context) {
+    fun authenticateToEncrypt(appContext: Context, data: String) {
         readyToEncrypt = true
         if (BiometricManager.from(appContext).canAuthenticate() == BiometricManager
                 .BIOMETRIC_SUCCESS) {
+            dataToProcess = data
             val cipher = cryptographyManager.getInitializedCipherForEncryption(secretKeyName)
             biometricPrompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
         }
     }
 
-    private fun authenticateToDecrypt(appContext: Context) {
+    fun authenticateToDecrypt(appContext: Context, data: String) {
         readyToEncrypt = false
         if (BiometricManager.from(appContext).canAuthenticate() == BiometricManager
                 .BIOMETRIC_SUCCESS) {
+            dataToProcess = data
             val cipher = cryptographyManager.getInitializedCipherForDecryption(secretKeyName,initializationVector)
             biometricPrompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
         }
-
     }
 
-    private fun processData(cryptoObject: BiometricPrompt.CryptoObject?) {
-        val data = if (readyToEncrypt) {
-            val text = textInputView.text.toString()
-            val encryptedData = cryptographyManager.encryptData(text, cryptoObject?.cipher!!)
+    private fun processData(attendanceData: String, cryptoObject: BiometricPrompt.CryptoObject?): String {
+        return if (readyToEncrypt) {
+            val encryptedData = cryptographyManager.encryptData(attendanceData, cryptoObject?.cipher!!)
             ciphertext = encryptedData.ciphertext
             initializationVector = encryptedData.initializationVector
-
             String(ciphertext, Charset.forName("UTF-8"))
         } else {
             cryptographyManager.decryptData(ciphertext, cryptoObject?.cipher!!)
         }
-        textOutputView.text = data
     }
 
     companion object {
-        private const val TAG = "Activity"
+        private const val TAG = "My Attendance"
     }
 
 }

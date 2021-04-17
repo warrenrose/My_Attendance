@@ -22,6 +22,15 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity android:name=".src.ClassSelection"/>
+        <activity android:name=".src.History"/>
+        <activity android:name=".src.HistoryDetails"
+             android:theme="@style/Theme.AppCompat.Dialog">
+        </activity>
+        <activity android:name=".src.Pending"/>
+        <activity android:name=".src.PendingDetails"
+            android:theme="@style/Theme.AppCompat.Dialog">
+        </activity>
+        <activity android:name=".src.test"/>
         <activity android:name=".src.QrGenerator"/>
         <activity android:name=".src.ScanQr"/>
     </application>

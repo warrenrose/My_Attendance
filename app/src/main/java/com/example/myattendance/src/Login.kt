@@ -4,10 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
 import com.example.myattendance.R
 import com.example.myattendance.utility.Biometric
+import com.example.myattendance.utility.CryptographyManager
 import com.example.myattendance.utility.Registration
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -15,14 +17,15 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
+import java.nio.charset.Charset
 
 
 class Login : AppCompatActivity() {
 
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var promptInfo: BiometricPrompt.PromptInfo
+    private lateinit var cryptographyManager: CryptographyManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +36,6 @@ class Login : AppCompatActivity() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build()
-
 
         // Build a GoogleSignInClient with the options specified by gso.
         var mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
@@ -50,13 +52,15 @@ class Login : AppCompatActivity() {
     private fun updateUI(account: GoogleSignInAccount?) {
         val userApp = Registration()
         val userBio = Biometric()
-        biometricPrompt = userBio.createBiometricPrompt(this, applicationContext, "login")
+        biometricPrompt = userBio.createBiometricPrompt(this, applicationContext, "register")
         promptInfo = userBio.createPromptInfo(getString(R.string.prompt_info_title), getString(R.string.prompt_info_subtitle), getString(R.string.prompt_info_description), getString(R.string.prompt_info_use_app_password))
-        biometricPrompt.authenticate(promptInfo)
+        //biometricPrompt.authenticate(promptInfo)
+
         if(account != null) {
-            if(!userApp.hasRegistered(applicationContext)) {
-                userApp.register(applicationContext)
-            }
+            /*if(!userApp.hasRegistered(applicationContext)) {
+                biometricPrompt.authenticate(promptInfo)
+                //userApp.register(applicationContext)
+            }*/
             findViewById<SignInButton>(R.id.sign_in_button).visibility = View.GONE
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
@@ -108,13 +112,5 @@ class Login : AppCompatActivity() {
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
     }
-
-    /*private fun signOut(Client: GoogleSignInClient) {
-        Client.signOut()
-                .addOnCompleteListener(this, OnCompleteListener<Void?> {
-                    val intent = Intent(applicationContext, Login::class.java)
-                    startActivity(intent)
-                })
-    }*/
 
 }

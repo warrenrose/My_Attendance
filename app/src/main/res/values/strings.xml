@@ -21,6 +21,8 @@
     <string name="prompt_info_subtitle">Please verify your identity</string>
     <string name="prompt_info_description">Scan fingerprint to proceed</string>
     <string name="prompt_info_use_app_password">Use Account Password</string>
-    <string name="invalidQR">You are scanning a QR Code that is not generated from this Application</string>
+    <string name="invalidQR">Please scan a valid attendance QR Code</string>
+    <string name="has_Connection">Upload Successful</string>
+    <string name="no_Connection">Upload Failed. Please check your Internet Connectivity</string>
 
 </resources>

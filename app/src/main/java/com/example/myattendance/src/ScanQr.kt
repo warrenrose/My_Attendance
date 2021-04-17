@@ -8,13 +8,18 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.security.crypto.EncryptedFile
 import com.budiyev.android.codescanner.*
 import com.example.myattendance.R
 import com.example.myattendance.utility.Connection
+import com.example.myattendance.utility.CryptographyManager
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -24,11 +29,13 @@ private const val CAMERA_REQUEST_CODE = 101
 class ScanQr : AppCompatActivity() {
     private lateinit var codeScanner: CodeScanner
     private lateinit var attendanceInfo: String
+    private lateinit var encryptedFile: EncryptedFile
     private lateinit var directory: File
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.qr_scanner)
+        title = "Attendance QR Scanner"
 
         setupPermission()
         codeScanner()
@@ -59,19 +66,20 @@ class ScanQr : AppCompatActivity() {
                         val deviceConnection = Connection()
                         var dateTimeNow: String = if (android.os.Build.VERSION.SDK_INT >= 26) {
                             val dtf: DateTimeFormatter =
-                                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                            val now = LocalDateTime.now()
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mma")
+                            val myZone: ZoneId = ZoneId.of("Asia/Singapore")
+                            val now: ZonedDateTime = ZonedDateTime.now(myZone)
                             dtf.format(now)
                         } else {
-                            val formatter = SimpleDateFormat("dd-MM-yyyy HH:mm:ss")
+                            val formatter = SimpleDateFormat("dd-MM-yyyy hh:mma")
                             val date = Date()
                             formatter.format(date)
                         }
                         val filename = dateTimeNow.replace(" ", "_")
 
                         attendanceInfo = ""
-                        it.text.replace("/UTAR - Universiti Tunku Abdul Rahman", "")
-                        val qrMessage = Scanner(it.text).useDelimiter(File.pathSeparator)
+                        //it.text.replace("/UTAR - Universiti Tunku Abdul Rahman", "")
+                        val qrMessage = Scanner(it.text).useDelimiter("/")
                         val newLine = System.getProperty("line.separator")
                         while (qrMessage.hasNext()) {
                             attendanceInfo += qrMessage.next() + newLine
@@ -83,16 +91,23 @@ class ScanQr : AppCompatActivity() {
                             val outputStream = FileOutputStream(File(directory, filename))
                             outputStream.write(attendanceInfo.toByteArray())
                         } else {
-                            directory = getDir("Pending", MODE_PRIVATE)
+                            encryptedFile = CryptographyManager().getOrCreateEncryptedFile(
+                                applicationContext, getDir("Pending", MODE_PRIVATE), filename)
+                            encryptedFile.openFileOutput().apply {
+                                write(attendanceInfo.toByteArray(StandardCharsets.UTF_8))
+                                flush()
+                                close()
+                            }
+                            /*directory = getDir("Pending", MODE_PRIVATE)
                             val outputStream = FileOutputStream(File(directory, filename))
-                            outputStream.write(attendanceInfo.toByteArray())
+                            outputStream.write(attendanceInfo.toByteArray())*/
                         }
 
                         findViewById<TextView>(R.id.scanResult).text = attendanceInfo
-                        Toast.makeText(this@ScanQr, "Attendance taken!", Toast.LENGTH_SHORT)
+                        Toast.makeText(applicationContext, "Attendance taken!", Toast.LENGTH_LONG).show()
                     }
                     else {
-                        Toast.makeText(this@ScanQr, getString(R.string.invalidQR), Toast.LENGTH_SHORT)
+                        Toast.makeText(applicationContext, getString(R.string.invalidQR), Toast.LENGTH_LONG).show()
                     }
                 }
                 errorCallback = ErrorCallback { // or ErrorCallback.SUPPRESS
